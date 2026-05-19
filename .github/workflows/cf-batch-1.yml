@@ -1,0 +1,36 @@
+name: CF Batch 1 - Projects 1 to 5
+
+on:
+  schedule:
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+
+jobs:
+  run-project:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [project1, project2, project3, project4, project5]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: Run ${{ matrix.project }}
+        env:
+          CF_R2_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+          CF_R2_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+          CF_R2_BUCKET_NAME: ${{ secrets.CF_R2_BUCKET_NAME }}
+          CF_R2_ENDPOINT_URL: ${{ secrets.CF_R2_ENDPOINT_URL }}
+        run: python -m CF.${{ matrix.project }}.main

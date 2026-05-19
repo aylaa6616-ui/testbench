@@ -1,0 +1,37 @@
+name: CF Batch 3 - Projects 11 to 15
+
+on:
+  workflow_run:
+    workflows: ["CF Batch 2 - Projects 6 to 10"]
+    types: [completed]
+  workflow_dispatch:
+
+jobs:
+  run-project:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: [project11, project12, project13, project14, project15]
+      fail-fast: false
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          playwright install chromium
+
+      - name: Run ${{ matrix.project }}
+        env:
+          CF_R2_ACCESS_KEY_ID: ${{ secrets.CF_R2_ACCESS_KEY_ID }}
+          CF_R2_SECRET_ACCESS_KEY: ${{ secrets.CF_R2_SECRET_ACCESS_KEY }}
+          CF_R2_BUCKET_NAME: ${{ secrets.CF_R2_BUCKET_NAME }}
+          CF_R2_ENDPOINT_URL: ${{ secrets.CF_R2_ENDPOINT_URL }}
+        run: python -m CF.${{ matrix.project }}.main
